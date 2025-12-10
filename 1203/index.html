@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데일리 미니 퀘스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Splash Screen */
+        .splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeOut 1s ease 2.5s forwards;
+        }
+
+        .splash-logo {
+            font-size: 80px;
+            animation: bounceIn 1s ease;
+        }
+
+        .splash-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            margin-top: 20px;
+            animation: fadeInUp 1s ease 0.3s both;
+        }
+
+        .splash-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 10px;
+            animation: fadeInUp 1s ease 0.5s both;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* Main Menu */
+        .menu {
+            display: none;
+            min-height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .menu.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .menu-logo {
+            font-size: 100px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .menu-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            margin: 20px 0 10px;
+        }
+
+        .menu-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 50px;
+        }
+
+        .menu-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px 30px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-top: 5px;
+        }
+
+        .menu-btn {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .menu-btn.primary {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border: none;
+            font-size: 24px;
+            padding: 25px;
+        }
+
+        .btn-text {
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-sub {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-top: 3px;
+        }
+
+        /* Quest Screen */
+        .quest-screen {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .quest-screen.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .title-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .title-info, .level-info {
+            color: white;
+        }
+
+        .title-label {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .title-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .level-number {
+            font-size: 40px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .exp-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+        }
+
+        .exp-bar {
+            height: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .exp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff8c00);
+            transition: width 0.5s ease;
+        }
+
+        .quests-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .quests-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .quest-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .quest-card.completed {
+            opacity: 0.5;
+        }
+
+        .quest-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .quest-btn.easy {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .quest-btn.medium {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .quest-btn.hard {
+            background: linear-gradient(135deg, #a855f7, #9333ea);
+        }
+
+        .quest-btn.completed {
+            background: #10b981;
+        }
+
+        .quest-content {
+            flex: 1;
+        }
+
+        .quest-text {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .quest-text.completed {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        .quest-meta {
+            display: flex;
+            gap: 10px;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge.easy {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .badge.medium {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        .badge.hard {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+        }
+
+        .exp-badge {
+            color: #ffd700;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .complete-banner {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .complete-banner .icon {
+            font-size: 48px;
+        }
+
+        .complete-banner .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin: 10px 0;
+        }
+
+        .titles-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .titles-header {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .titles-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .title-card {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .title-card.unlocked {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 140, 0, 0.2));
+            border: 2px solid rgba(255, 215, 0, 0.5);
+        }
+
+        .title-card.locked {
+            background: rgba(255, 255, 255, 0.05);
+            opacity: 0.5;
+        }
+
+        .title-card .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .title-card.locked .icon {
+            filter: grayscale(1);
+            opacity: 0.3;
+        }
+
+        .title-card .name {
+            font-weight: bold;
+            color: white;
+        }
+
+        .levelup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .levelup-overlay.show {
+            display: flex;
+        }
+
+        .levelup-banner {
+            background: #ffd700;
+            color: #764ba2;
+            padding: 30px 50px;
+            border-radius: 20px;
+            animation: bounce 0.6s ease;
+        }
+
+        .levelup-banner .title {
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Splash -->
+    <div class="splash" id="splash">
+        <div class="splash-logo">🎯</div>
+        <div class="splash-title">Daily Quest</div>
+        <div class="splash-subtitle">루틴을 레벨업하세요</div>
+    </div>
+
+    <!-- Menu -->
+    <div class="menu" id="menu">
+        <div class="menu-logo">🎯</div>
+        <div class="menu-title">Daily Quest</div>
+        <div class="menu-subtitle">오늘도 레벨업 준비 되셨나요?</div>
+        
+        <div class="menu-stats">
+            <div class="stat-card">
+                <div class="stat-label">현재 레벨</div>
+                <div class="stat-value">⚡ <span id="menuLv">1</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">완료 퀘스트</div>
+                <div class="stat-value">✓ <span id="menuTotal">0</span></div>
+            </div>
+        </div>
+
+        <button class="menu-btn primary" onclick="startQuest()">
+            <span>🚀</span>
+            <div class="btn-text">
+                오늘의 퀘스트 시작
+                <div class="btn-sub">5개의 미션이 기다립니다</div>
+            </div>
+            <span>→</span>
+        </button>
+        
+        <button class="menu-btn" onclick="showTitles()">
+            <span>🏆</span>
+            <div class="btn-text">
+                칭호 보기
+                <div class="btn-sub">달성한 업적 확인</div>
+            </div>
+            <span>→</span>
+        </button>
+
+        <button class="menu-btn" onclick="showStats()">
+            <span>📊</span>
+            <div class="btn-text">
+                통계
+                <div class="btn-sub">나의 성장 기록</div>
+            </div>
+            <span>→</span>
+        </button>
+    </div>
+
+    <!-- Quest Screen -->
+    <div class="quest-screen" id="questScreen">
+        <button class="back-btn" onclick="goBack()">← 메인으로</button>
+
+        <div class="container">
+            <div class="levelup-overlay" id="levelupOverlay">
+                <div class="levelup-banner">
+                    <div class="title">🎉 LEVEL UP! 🎉</div>
+                    <div>Level <span id="levelupNum"></span></div>
+                </div>
+            </div>
+
+            <div class="header">
+                <div class="title-section">
+                    <div class="title-info">
+                        <div class="title-label">현재 칭호</div>
+                        <div class="title-name">
+                            <span id="titleIcon">🌱</span>
+                            <span id="titleName">정리 초심자</span>
+                        </div>
+                    </div>
+                    <div class="level-info">
+                        <div class="title-label">레벨</div>
+                        <div class="level-number" id="level">1</div>
+                    </div>
+                </div>
+                <div class="exp-label">
+                    <span>EXP</span>
+                    <span><span id="exp">0</span> / <span id="maxExp">100</span></span>
+                </div>
+                <div class="exp-bar">
+                    <div class="exp-fill" id="expFill"></div>
+                </div>
+            </div>
+
+            <div class="quests-header">
+                <div class="quests-title">⚡ 오늘의 퀘스트</div>
+                <button class="refresh-btn" onclick="refreshQuests()">
+                    🔄 새로고침 (<span id="refreshCount">3</span>/3)
+                </button>
+            </div>
+            <div id="questsList"></div>
+            <div id="completeBanner" class="complete-banner hidden">
+                <div class="icon">🏆</div>
+                <div class="title">오늘의 퀘스트 완료!</div>
+                <div>내일 다시 도전하세요 🎉</div>
+            </div>
+
+            <div class="titles-section">
+                <div class="titles-header">🏆 획득한 칭호</div>
+                <div class="titles-grid" id="titlesGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Screen -->
+    <div class="quest-screen" id="statsScreen">
+        <button class="back-btn" onclick="goBackFromStats()">← 메인으로</button>
+
+        <div class="container">
+            <div class="header">
+                <div style="text-align: center;">
+                    <div style="font-size: 60px; margin-bottom: 15px;">📊</div>
+                    <div style="font-size: 28px; font-weight: bold; color: white; margin-bottom: 5px;">나의 성장 기록</div>
+                    <div style="font-size: 14px; color: rgba(255, 255, 255, 0.7);">Daily Quest와 함께한 여정</div>
+                </div>
+            </div>
+
+            <!-- Main Stats -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                <div style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 140, 0, 0.2)); backdrop-filter: blur(10px); border-radius: 15px; padding: 25px; text-align: center; border: 2px solid rgba(255, 215, 0, 0.3);">
+                    <div style="font-size: 40px; margin-bottom: 10px;">⚡</div>
+                    <div style="font-size: 14px; color: rgba(255, 255, 255, 0.7); margin-bottom: 5px;">현재 레벨</div>
+                    <div style="font-size: 36px; font-weight: bold; color: #ffd700;" id="statsLevel">1</div>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2)); backdrop-filter: blur(10px); border-radius: 15px; padding: 25px; text-align: center; border: 2px solid rgba(16, 185, 129, 0.3);">
+                    <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
+                    <div style="font-size: 14px; color: rgba(255, 255, 255, 0.7); margin-bottom: 5px;">총 완료 퀘스트</div>
+                    <div style="font-size: 36px; font-weight: bold; color: #6ee7b7;" id="statsTotal">0</div>
+                </div>
+            </div>
+
+            <!-- Detailed Stats -->
+            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; margin-bottom: 20px;">
+                <div style="font-size: 20px; font-weight: bold; color: white; margin-bottom: 20px;">📈 상세 통계</div>
+                
+                <div style="margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 24px;">🟢</span>
+                            <span style="color: white; font-size: 16px;">쉬움 퀘스트</span>
+                        </div>
+                        <span style="color: #6ee7b7; font-size: 20px; font-weight: bold;" id="statsEasy">0</span>
+                    </div>
+                    <div style="height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; overflow: hidden;">
+                        <div id="statsEasyBar" style="height: 100%; background: linear-gradient(90deg, #10b981, #059669); width: 0%; transition: width 0.5s;"></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 24px;">🔵</span>
+                            <span style="color: white; font-size: 16px;">보통 퀘스트</span>
+                        </div>
+                        <span style="color: #93c5fd; font-size: 20px; font-weight: bold;" id="statsMedium">0</span>
+                    </div>
+                    <div style="height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; overflow: hidden;">
+                        <div id="statsMediumBar" style="height: 100%; background: linear-gradient(90deg, #3b82f6, #2563eb); width: 0%; transition: width 0.5s;"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 24px;">🟣</span>
+                            <span style="color: white; font-size: 16px;">어려움 퀘스트</span>
+                        </div>
+                        <span style="color: #c084fc; font-size: 20px; font-weight: bold;" id="statsHard">0</span>
+                    </div>
+                    <div style="height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; overflow: hidden;">
+                        <div id="statsHardBar" style="height: 100%; background: linear-gradient(90deg, #a855f7, #9333ea); width: 0%; transition: width 0.5s;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievement Stats -->
+            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px;">
+                <div style="font-size: 20px; font-weight: bold; color: white; margin-bottom: 20px;">🏆 업적 현황</div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; margin-bottom: 12px;">
+                    <span style="color: rgba(255, 255, 255, 0.9);">획득한 칭호</span>
+                    <span style="color: #ffd700; font-weight: bold; font-size: 18px;"><span id="statsUnlockedTitles">1</span> / 5</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; margin-bottom: 12px;">
+                    <span style="color: rgba(255, 255, 255, 0.9);">다음 레벨까지</span>
+                    <span style="color: #ffd700; font-weight: bold; font-size: 18px;"><span id="statsExpNeeded">0</span> EXP</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 10px;">
+                    <span style="color: rgba(255, 255, 255, 0.9);">총 획득 EXP</span>
+                    <span style="color: #ffd700; font-weight: bold; font-size: 18px;"><span id="statsTotalExp">0</span> EXP</span>
+                </div>
+            </div>
+
+            <!-- Motivational Message -->
+            <div style="background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 15px; padding: 25px; margin-top: 20px; text-align: center;">
+                <div style="font-size: 24px; margin-bottom: 10px;">✨</div>
+                <div style="color: white; font-size: 16px; line-height: 1.6;" id="statsMessage">
+                    매일 조금씩 성장하고 있어요!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Titles Screen -->
+    <div class="quest-screen" id="titlesScreen">
+        <button class="back-btn" onclick="goBackFromTitles()">← 메인으로</button>
+
+        <div class="container">
+            <div class="header">
+                <div class="title-section">
+                    <div class="title-info">
+                        <div class="title-label">현재 칭호</div>
+                        <div class="title-name">
+                            <span id="titleIcon2">🌱</span>
+                            <span id="titleName2">정리 초심자</span>
+                        </div>
+                    </div>
+                    <div class="level-info">
+                        <div class="title-label">레벨</div>
+                        <div class="level-number" id="level2">1</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quests-header">
+                <div class="quests-title">🏆 모든 칭호</div>
+            </div>
+
+            <div id="titlesDetailList"></div>
+
+            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; margin-top: 20px;">
+                <div style="font-size: 20px; font-weight: bold; color: white; margin-bottom: 15px;">💡 칭호 획득 방법</div>
+                <div style="color: rgba(255, 255, 255, 0.8); line-height: 1.8;">
+                    퀘스트를 완료하여 EXP를 모으고 레벨업하면<br>
+                    자동으로 새로운 칭호가 해금됩니다!<br><br>
+                    <strong style="color: #ffd700;">레벨업 = 새로운 칭호 획득</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            level: 1,
+            exp: 0,
+            completed: new Set(),
+            date: null,
+            quests: [],
+            total: 0,
+            easyCount: 0,
+            mediumCount: 0,
+            hardCount: 0,
+            refreshCount: 0
+        };
+
+        const pools = {
+            easy: [
+                { text: "창문 열어 환기하기", exp: 15 },
+                { text: "물 한 잔 마시기", exp: 15 },
+                { text: "책상 정리하기", exp: 15 },
+                { text: "알림 정리하기", exp: 15 },
+                { text: "1분 스트레칭", exp: 15 },
+                { text: "할 일 3가지 떠올리기", exp: 15 }
+            ],
+            medium: [
+                { text: "5분 방 정리", exp: 30 },
+                { text: "10분 산책", exp: 30 },
+                { text: "앱 3개 삭제", exp: 30 },
+                { text: "감사한 일 3가지 적기", exp: 30 },
+                { text: "15분 독서", exp: 30 }
+            ],
+            hard: [
+                { text: "30분 운동", exp: 50 },
+                { text: "새 레시피 요리", exp: 50 },
+                { text: "오랜만에 연락하기", exp: 50 },
+                { text: "미뤄둔 일 완료", exp: 50 }
+            ]
+        };
+
+        const titles = [
+            { level: 1, name: "정리 초심자", icon: "🌱" },
+            { level: 3, name: "패턴 개척자", icon: "🚀" },
+            { level: 5, name: "일상 정복자", icon: "⚔️" },
+            { level: 8, name: "루틴 마스터", icon: "👑" },
+            { level: 10, name: "패턴 엔지니어", icon: "🎯" }
+        ];
+
+        function load() {
+            const s = localStorage.getItem('quest');
+            if (s) {
+                const p = JSON.parse(s);
+                state = { ...p, completed: new Set(p.completed) };
+            }
+        }
+
+        function save() {
+            localStorage.setItem('quest', JSON.stringify({
+                ...state,
+                completed: [...state.completed]
+            }));
+        }
+
+        function shuffle(a) {
+            const r = [...a];
+            for (let i = r.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [r[i], r[j]] = [r[j], r[i]];
+            }
+            return r;
+        }
+
+        function genQuests() {
+            const today = new Date().toDateString();
+            if (state.date !== today) {
+                state.refreshCount = 3; // Reset refresh count on new day
+            }
+            
+            if (state.date === today && state.quests.length > 0) {
+                render();
+                updateRefreshButton();
+                return;
+            }
+
+            state.quests = [
+                ...shuffle(pools.easy).slice(0, 2),
+                ...shuffle(pools.medium).slice(0, 2),
+                ...shuffle(pools.hard).slice(0, 1)
+            ].map((q, i) => ({ ...q, id: i }));
+            
+            state.completed = new Set();
+            state.date = today;
+            state.refreshCount = 3;
+            save();
+            render();
+            updateRefreshButton();
+        }
+
+        function refreshQuests() {
+            // Check if all quests are completed
+            if (state.completed.size === state.quests.length) {
+                alert('❌ 모든 퀘스트를 완료했습니다!\n새로 생성할 수 있는 퀘스트가 없습니다.');
+                return;
+            }
+
+            // Check refresh count
+            if (state.refreshCount <= 0) {
+                alert('❌ 오늘의 새로고침 기회를 모두 사용했습니다!\n내일 다시 시도해주세요.');
+                return;
+            }
+
+            if (!confirm(`🔄 새로고침 하시겠습니까?\n남은 기회: ${state.refreshCount}/3\n\n완료하지 않은 퀘스트만 새로 생성됩니다.`)) {
+                return;
+            }
+
+            state.refreshCount--;
+
+            // Get completed quests
+            const completedQuests = state.quests.filter(q => state.completed.has(q.id));
+            
+            // Count how many new quests we need by difficulty
+            const completedByDiff = {
+                easy: completedQuests.filter(q => getDiff(q.exp) === 'easy').length,
+                medium: completedQuests.filter(q => getDiff(q.exp) === 'medium').length,
+                hard: completedQuests.filter(q => getDiff(q.exp) === 'hard').length
+            };
+
+            // Generate new quests for incomplete ones
+            const newQuests = [
+                ...shuffle(pools.easy).slice(0, 2 - completedByDiff.easy),
+                ...shuffle(pools.medium).slice(0, 2 - completedByDiff.medium),
+                ...shuffle(pools.hard).slice(0, 1 - completedByDiff.hard)
+            ];
+
+            // Reassign IDs
+            let nextId = 0;
+            const allQuests = [];
+            
+            // Add completed quests first
+            completedQuests.forEach(q => {
+                allQuests.push({ ...q, id: nextId++ });
+            });
+            
+            // Add new quests
+            newQuests.forEach(q => {
+                allQuests.push({ ...q, id: nextId++ });
+            });
+
+            // Update completed IDs
+            const newCompleted = new Set();
+            for (let i = 0; i < completedQuests.length; i++) {
+                newCompleted.add(i);
+            }
+
+            state.quests = allQuests;
+            state.completed = newCompleted;
+
+            save();
+            render();
+            updateRefreshButton();
+
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+
+        function updateRefreshButton() {
+            const btn = document.querySelector('.refresh-btn');
+            const countSpan = document.getElementById('refreshCount');
+            
+            if (countSpan) {
+                countSpan.textContent = state.refreshCount;
+            }
+
+            if (state.refreshCount <= 0) {
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            } else {
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        }
+
+        function complete(id) {
+            if (state.completed.has(id)) return;
+
+            const q = state.quests.find(x => x.id === id);
+            state.completed.add(id);
+            state.total++;
+
+            // Track by difficulty
+            const diff = getDiff(q.exp);
+            if (diff === 'easy') state.easyCount++;
+            else if (diff === 'medium') state.mediumCount++;
+            else if (diff === 'hard') state.hardCount++;
+
+            if (navigator.vibrate) navigator.vibrate(50);
+
+            const max = state.level * 100;
+            state.exp += q.exp;
+
+            if (state.exp >= max) {
+                state.level++;
+                state.exp -= max;
+                showLevelup();
+            }
+
+            save();
+            render();
+            updateMenu();
+        }
+
+        function showLevelup() {
+            const el = document.getElementById('levelupOverlay');
+            document.getElementById('levelupNum').textContent = state.level;
+            el.classList.add('show');
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        function getTitle() {
+            return [...titles].sort((a, b) => b.level - a.level)
+                .find(t => state.level >= t.level) || titles[0];
+        }
+
+        function getDiff(exp) {
+            return exp === 15 ? 'easy' : exp === 30 ? 'medium' : 'hard';
+        }
+
+        function getDiffText(d) {
+            return { easy: '쉬움', medium: '보통', hard: '어려움' }[d];
+        }
+
+        function render() {
+            const list = document.getElementById('questsList');
+            list.innerHTML = '';
+
+            state.quests.forEach(q => {
+                const done = state.completed.has(q.id);
+                const diff = getDiff(q.exp);
+                
+                list.innerHTML += `
+                    <div class="quest-card ${done ? 'completed' : ''}">
+                        <button class="quest-btn ${done ? 'completed' : diff}" 
+                                onclick="complete(${q.id})" ${done ? 'disabled' : ''}>
+                            ${done ? '✓' : '⭐'}
+                        </button>
+                        <div class="quest-content">
+                            <div class="quest-text ${done ? 'completed' : ''}">${q.text}</div>
+                            <div class="quest-meta">
+                                <span class="badge ${diff}">${getDiffText(diff)}</span>
+                                <span class="exp-badge">+${q.exp} EXP</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const all = state.quests.length > 0 && state.completed.size === state.quests.length;
+            document.getElementById('completeBanner').className = all ? 'complete-banner' : 'complete-banner hidden';
+        }
+
+        function renderTitles() {
+            const grid = document.getElementById('titlesGrid');
+            grid.innerHTML = '';
+
+            titles.forEach(t => {
+                const unlocked = state.level >= t.level;
+                grid.innerHTML += `
+                    <div class="title-card ${unlocked ? 'unlocked' : 'locked'}">
+                        <div class="icon">${t.icon}</div>
+                        <div class="name">${t.name}</div>
+                        <div>Lv.${t.level}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateUI() {
+            const title = getTitle();
+            const max = state.level * 100;
+            const prog = (state.exp / max) * 100;
+
+            document.getElementById('titleIcon').textContent = title.icon;
+            document.getElementById('titleName').textContent = title.name;
+            document.getElementById('level').textContent = state.level;
+            document.getElementById('exp').textContent = state.exp;
+            document.getElementById('maxExp').textContent = max;
+            document.getElementById('expFill').style.width = prog + '%';
+
+            renderTitles();
+        }
+
+        function updateMenu() {
+            document.getElementById('menuLv').textContent = state.level;
+            document.getElementById('menuTotal').textContent = state.total;
+        }
+
+        function startQuest() {
+            document.getElementById('menu').classList.remove('active');
+            document.getElementById('questScreen').classList.add('active');
+            genQuests();
+            updateUI();
+            updateRefreshButton();
+        }
+
+        function goBack() {
+            document.getElementById('questScreen').classList.remove('active');
+            document.getElementById('menu').classList.add('active');
+        }
+
+        function showTitles() {
+            document.getElementById('menu').classList.remove('active');
+            document.getElementById('titlesScreen').classList.add('active');
+            updateTitlesScreen();
+        }
+
+        function goBackFromTitles() {
+            document.getElementById('titlesScreen').classList.remove('active');
+            document.getElementById('menu').classList.add('active');
+        }
+
+        function showStats() {
+            document.getElementById('menu').classList.remove('active');
+            document.getElementById('statsScreen').classList.add('active');
+            updateStatsScreen();
+        }
+
+        function goBackFromStats() {
+            document.getElementById('statsScreen').classList.remove('active');
+            document.getElementById('menu').classList.add('active');
+        }
+
+        function updateStatsScreen() {
+            document.getElementById('statsLevel').textContent = state.level;
+            document.getElementById('statsTotal').textContent = state.total;
+            
+            document.getElementById('statsEasy').textContent = state.easyCount;
+            document.getElementById('statsMedium').textContent = state.mediumCount;
+            document.getElementById('statsHard').textContent = state.hardCount;
+
+            // Calculate percentages for bars
+            const total = state.total || 1;
+            document.getElementById('statsEasyBar').style.width = (state.easyCount / total * 100) + '%';
+            document.getElementById('statsMediumBar').style.width = (state.mediumCount / total * 100) + '%';
+            document.getElementById('statsHardBar').style.width = (state.hardCount / total * 100) + '%';
+
+            // Unlocked titles
+            const unlockedCount = titles.filter(t => state.level >= t.level).length;
+            document.getElementById('statsUnlockedTitles').textContent = unlockedCount;
+
+            // Next level EXP
+            const max = state.level * 100;
+            document.getElementById('statsExpNeeded').textContent = max - state.exp;
+
+            // Total EXP earned
+            const totalExp = (state.level - 1) * 100 + state.exp;
+            document.getElementById('statsTotalExp').textContent = totalExp;
+
+            // Motivational message
+            const messages = [
+                '매일 조금씩 성장하고 있어요!',
+                '꾸준함이 당신의 무기입니다! 💪',
+                '이미 충분히 잘하고 있어요! ✨',
+                '오늘도 한 걸음 전진했네요! 🚀',
+                '루틴의 힘을 느끼고 계신가요? 🌟',
+                '당신의 노력이 빛나고 있어요! ⭐',
+                '계속 이대로만 가면 됩니다! 🎯'
+            ];
+            document.getElementById('statsMessage').textContent = messages[state.level % messages.length];
+        }
+
+        function updateTitlesScreen() {
+            const title = getTitle();
+            document.getElementById('titleIcon2').textContent = title.icon;
+            document.getElementById('titleName2').textContent = title.name;
+            document.getElementById('level2').textContent = state.level;
+
+            const list = document.getElementById('titlesDetailList');
+            list.innerHTML = '';
+
+            titles.forEach(t => {
+                const unlocked = state.level >= t.level;
+                const status = unlocked ? '✅  획득 완료' : `🔒 Lv.${t.level}에 해금`;
+                const statusColor = unlocked ? '#10b981' : 'rgba(255, 255, 255, 0.5)';
+                
+                list.innerHTML += `
+                    <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; padding: 25px; margin-bottom: 15px; ${unlocked ? 'border: 2px solid rgba(255, 215, 0, 0.5);' : 'opacity: 0.6;'}">
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <div style="font-size: 60px; ${unlocked ? '' : 'filter: grayscale(1); opacity: 0.3;'}">${t.icon}</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 24px; font-weight: bold; color: ${unlocked ? 'white' : 'rgba(255, 255, 255, 0.5)'}; margin-bottom: 8px;">
+                                    ${t.name}
+                                </div>
+                                <div style="font-size: 14px; color: ${statusColor}; font-weight: bold;">
+                                    ${status}
+                                </div>
+                                <div style="font-size: 13px; color: rgba(255, 255, 255, 0.6); margin-top: 5px;">
+                                    레벨 ${t.level} 달성 시 획득
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function init() {
+            load();
+            updateMenu();
+            setTimeout(() => {
+                document.getElementById('splash').style.display = 'none';
+                document.getElementById('menu').classList.add('active');
+            }, 3000);
+        }
+
+        init();
+    </script>
+</body>
+</html>
